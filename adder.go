@@ -1,17 +1,12 @@
 package main
 
 import (
-	"fmt"
-
 	"adder/core"
 )
 
-func main() {
-	// Initialize the circuit
+func createFullAdderCircuit() *core.Circuit {
 	circuit := core.NewCircuit()
 
-	// Add gates to the circuit
-	// Batch add gates to the circuit
 	circuit.AddGates([]core.Gate{
 		core.NewGate("XorGate", "XOR1"),
 		core.NewGate("XorGate", "XOR2"),
@@ -26,17 +21,18 @@ func main() {
 	circuit.Connect("AND2", "XOR1", "Cin")
 	circuit.Connect("OR", "AND1", "AND2")
 
-	// Define connections (for a full adder circuit)
-	circuit.SetInputs(map[string]bool{
-		"A":   true,
-		"B":   true,
-		"Cin": true,
-	})
+	return circuit
+}
 
-	// Run the circuit to get the sum and carry out
-	sum := circuit.Run("XOR2")
-	carryOut := circuit.Run("OR")
+func RunFullAdder(
+	circuit *core.Circuit,
+	inputs map[string]bool,
+) (sum bool, carryOut bool) {
 
-	// Print the results
-	fmt.Printf("Sum: %t, Carry Out: %t\n", sum, carryOut)
+	circuit.SetInputs(inputs)
+
+	sum = circuit.Run("XOR2")
+	carryOut = circuit.Run("OR")
+
+	return
 }

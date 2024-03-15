@@ -1,6 +1,5 @@
 package core
 
-// Gate interface that all gates implement
 type Gate interface {
 	Exec(circuit *Circuit) bool
 	GetLabel() string
@@ -27,8 +26,6 @@ func NewGate(gateType, label string) Gate {
 	}
 }
 
-// BasicGate contains common properties,
-// including the gate's label
 type BasicGate struct {
 	Label string
 }
