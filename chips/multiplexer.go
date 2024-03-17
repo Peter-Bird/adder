@@ -10,28 +10,65 @@ type Multiplexer struct{}
 func (mux Multiplexer) Create() *core.Circuit {
 	circuit := core.NewCircuit()
 
-	// Assuming each "NOT", "AND", and "OR" gate needs a unique identifier
-	for i := 1; i <= 4; i++ {
-		circuit.AddGates([]core.Gate{
-			core.NewGate("NotGate", fmt.Sprintf("NOT%d", i)),
-			core.NewGate("AndGate", fmt.Sprintf("AND_A%d", i)),
-			core.NewGate("AndGate", fmt.Sprintf("AND_B%d", i)),
-			core.NewGate("OrGate", fmt.Sprintf("OR_%d", i)),
-		})
+	gates := []struct {
+		Type string
+		Name string
+	}{
+		{"NotGate", "NOT1"},
+		{"NotGate", "NOT2"},
+		{"NotGate", "NOT3"},
+		{"NotGate", "NOT4"},
+		{"AndGate", "AND_A1"},
+		{"AndGate", "AND_A2"},
+		{"AndGate", "AND_A3"},
+		{"AndGate", "AND_A4"},
+		{"AndGate", "AND_B1"},
+		{"AndGate", "AND_B2"},
+		{"AndGate", "AND_B3"},
+		{"AndGate", "AND_B4"},
+		{"OrGate", "OR_1"},
+		{"OrGate", "OR_2"},
+		{"OrGate", "OR_3"},
+		{"OrGate", "OR_4"},
+		{"AndGate", "STROBE_GATE"},
 	}
 
-	// Correcting connection logic to ensure unique connections per gate
-	for i := 1; i <= 4; i++ {
-		circuit.Connect(fmt.Sprintf("AND_A%d", i), fmt.Sprintf("A%d", i), "SELECT")
-		circuit.Connect(fmt.Sprintf("AND_B%d", i), fmt.Sprintf("B%d", i), fmt.Sprintf("NOT%d", i))
-		circuit.Connect(fmt.Sprintf("NOT%d", i), "SELECT")
-		circuit.Connect(fmt.Sprintf("OR_%d", i), fmt.Sprintf("AND_A%d", i), fmt.Sprintf("AND_B%d", i))
+	for _, gate := range gates {
+		circuit.AddGate(core.NewGate(gate.Type, gate.Name))
 	}
 
-	// Added logic for STROBE_GATE connections based on the provided logic
-	circuit.AddGate(core.NewGate("AndGate", "STROBE_GATE"))
-	for i := 1; i <= 4; i++ {
-		circuit.Connect("STROBE_GATE", fmt.Sprintf("Y%d", i), "STROBE")
+	connections := [][]string{
+		{"AND_A1", "A1", "SELECT"},
+		{"AND_B1", "B1", "NOT1"},
+		{"NOT1", "SELECT"},
+		{"OR_1", "AND_A1", "AND_B1"},
+
+		{"AND_A2", "A2", "SELECT"},
+		{"AND_B2", "B2", "NOT2"},
+		{"NOT2", "SELECT"},
+		{"OR_2", "AND_A2", "AND_B2"},
+
+		{"AND_A3", "A3", "SELECT"},
+		{"AND_B3", "B3", "NOT3"},
+		{"NOT3", "SELECT"},
+		{"OR_3", "AND_A3", "AND_B3"},
+
+		{"AND_A4", "A4", "SELECT"},
+		{"AND_B4", "B4", "NOT4"},
+		{"NOT4", "SELECT"},
+		{"OR_4", "AND_A4", "AND_B4"},
+
+		{"STROBE_GATE", "OR_1", "Y1"},
+		{"STROBE_GATE", "OR_2", "Y2"},
+		{"STROBE_GATE", "OR_3", "Y3"},
+		{"STROBE_GATE", "OR_4", "Y4"},
+		{"STROBE_GATE", "STROBE"},
+	}
+
+	for _, conn := range connections {
+		source := conn[0]
+		inputs := conn[1:]
+		circuit.Connect(source, inputs...)
 	}
 
 	return circuit

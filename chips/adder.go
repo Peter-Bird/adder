@@ -10,19 +10,40 @@ type FullAdder struct{}
 func (fa FullAdder) Create() *core.Circuit {
 	circuit := core.NewCircuit()
 
-	circuit.AddGates([]core.Gate{
-		core.NewGate("XorGate", "XOR1"),
-		core.NewGate("XorGate", "XOR2"),
-		core.NewGate("AndGate", "AND1"),
-		core.NewGate("AndGate", "AND2"),
-		core.NewGate("OrGate", "OR"),
-	})
+	// Define gates
+	gates := []struct {
+		Type string
+		Name string
+	}{
+		{"XorGate", "XOR1"},
+		{"XorGate", "XOR2"},
+		{"AndGate", "AND1"},
+		{"AndGate", "AND2"},
+		{"OrGate", "OR"},
+	}
 
-	circuit.Connect("XOR1", "A", "B")
-	circuit.Connect("XOR2", "XOR1", "Cin")
-	circuit.Connect("AND1", "A", "B")
-	circuit.Connect("AND2", "XOR1", "Cin")
-	circuit.Connect("OR", "AND1", "AND2")
+	// Add gates to the circuit
+	for _, gate := range gates {
+		circuit.AddGate(core.NewGate(gate.Type, gate.Name))
+	}
+
+	// Define connections
+	connections := []struct {
+		Source string
+		Input1 string
+		Input2 string
+	}{
+		{"XOR1", "A", "B"},
+		{"XOR2", "XOR1", "Cin"},
+		{"AND1", "A", "B"},
+		{"AND2", "XOR1", "Cin"},
+		{"OR", "AND1", "AND2"},
+	}
+
+	// Connect gates within the circuit
+	for _, conn := range connections {
+		circuit.Connect(conn.Source, conn.Input1, conn.Input2)
+	}
 
 	return circuit
 }
