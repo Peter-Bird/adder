@@ -2,16 +2,20 @@ package core
 
 type Circuit struct {
 	Gates       map[string]Gate
-	Connections map[string][2]string
+	Connections map[string][]string
 	Inputs      map[string]bool
 }
 
 func NewCircuit() *Circuit {
 	return &Circuit{
 		Gates:       make(map[string]Gate),
-		Connections: make(map[string][2]string),
+		Connections: make(map[string][]string),
 		Inputs:      make(map[string]bool),
 	}
+}
+
+func (c *Circuit) AddGate(gate Gate) {
+	c.Gates[gate.GetLabel()] = gate
 }
 
 func (c *Circuit) AddGates(gates []Gate) {
@@ -20,47 +24,42 @@ func (c *Circuit) AddGates(gates []Gate) {
 	}
 }
 
-func (c *Circuit) AddGate(gate Gate) {
-	c.Gates[gate.GetLabel()] = gate
-}
-
-func (c *Circuit) Connect(gate string, in1, in2 string) {
-	c.Connections[gate] = [2]string{in1, in2}
+func (c *Circuit) Connect(gate string, inputs ...string) {
+	c.Connections[gate] = inputs
 }
 
 func (c *Circuit) SetInput(label string, value bool) {
 	c.Inputs[label] = value
 }
 
-func (c *Circuit) GetInputs(gateLabel string) (bool, bool) {
-	inputLabels := c.Connections[gateLabel]
-	input1, ok := c.Inputs[inputLabels[0]]
-	if !ok {
-		input1 = c.Gates[inputLabels[0]].Exec(c)
-	}
-	input2, ok := c.Inputs[inputLabels[1]]
-	if !ok {
-		input2 = c.Gates[inputLabels[1]].Exec(c)
-	}
-	return input1, input2
-}
-
-func (c *Circuit) GetInput(gateLabel string) bool {
-	inputLabels := c.Connections[gateLabel]
-
-	input, ok := c.Inputs[inputLabels[0]]
-	if !ok {
-		input = c.Gates[inputLabels[0]].Exec(c)
-	}
-	return input
-}
-
 func (c *Circuit) SetInputs(inputs map[string]bool) {
 	for label, value := range inputs {
-		c.SetInput(label, value)
+		c.Inputs[label] = value
 	}
+}
+
+func (c *Circuit) GetInputs(gateLabel string) []bool {
+	inputLabels := c.Connections[gateLabel]
+	inputs := make([]bool, len(inputLabels))
+
+	for i, label := range inputLabels {
+		input, ok := c.Inputs[label]
+		if !ok {
+			// If the input is not found in the Inputs map,
+			// assume it is an output from another gate
+			// and execute that gate.
+			input = c.Gates[label].Exec(c)
+		}
+		inputs[i] = input
+	}
+
+	return inputs
 }
 
 func (c *Circuit) Run(gateLabel string) bool {
-	return c.Gates[gateLabel].Exec(c)
+	gate, exists := c.Gates[gateLabel]
+	if !exists {
+		return false
+	}
+	return gate.Exec(c)
 }

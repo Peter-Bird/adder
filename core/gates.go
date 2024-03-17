@@ -1,29 +1,25 @@
 package core
 
 type Gate interface {
-	Exec(circuit *Circuit) bool
 	GetLabel() string
+	Exec(*Circuit) bool
+}
+
+var makeGate = map[string]func(string) Gate{
+	"XorGate":  func(l string) Gate { return &XorGate{BasicGate: BasicGate{Label: l}} },
+	"AndGate":  func(l string) Gate { return &AndGate{BasicGate: BasicGate{Label: l}} },
+	"OrGate":   func(l string) Gate { return &OrGate{BasicGate: BasicGate{Label: l}} },
+	"NotGate":  func(l string) Gate { return &NotGate{BasicGate: BasicGate{Label: l}} },
+	"NandGate": func(l string) Gate { return &NandGate{BasicGate: BasicGate{Label: l}} },
+	"NorGate":  func(l string) Gate { return &NorGate{BasicGate: BasicGate{Label: l}} },
+	"XnorGate": func(l string) Gate { return &XnorGate{BasicGate: BasicGate{Label: l}} },
 }
 
 func NewGate(gateType, label string) Gate {
-	switch gateType {
-	case "XorGate":
-		return &XorGate{BasicGate: BasicGate{Label: label}}
-	case "AndGate":
-		return &AndGate{BasicGate: BasicGate{Label: label}}
-	case "OrGate":
-		return &OrGate{BasicGate: BasicGate{Label: label}}
-	case "NotGate":
-		return &NotGate{BasicGate: BasicGate{Label: label}}
-	case "NandGate":
-		return &NandGate{BasicGate: BasicGate{Label: label}}
-	case "NorGate":
-		return &NorGate{BasicGate: BasicGate{Label: label}}
-	case "XnorGate":
-		return &XnorGate{BasicGate: BasicGate{Label: label}}
-	default:
-		return nil
+	if factory, exists := makeGate[gateType]; exists {
+		return factory(label)
 	}
+	return nil
 }
 
 type BasicGate struct {
@@ -42,37 +38,94 @@ type NandGate struct{ BasicGate }
 type NorGate struct{ BasicGate }
 type XnorGate struct{ BasicGate }
 
+// XorGate.Exec: XOR is true if and only
+// if there's an odd number of true inputs.
 func (g *XorGate) Exec(circuit *Circuit) bool {
-	input1, input2 := circuit.GetInputs(g.Label)
-	return input1 != input2
+	inputs := circuit.GetInputs(g.Label)
+	trueCount := 0
+
+	for _, input := range inputs {
+		if input {
+			trueCount++
+		}
+	}
+
+	return trueCount%2 == 1
 }
 
+// AndGate.Exec: Returns false if any input is false
 func (g *AndGate) Exec(circuit *Circuit) bool {
-	input1, input2 := circuit.GetInputs(g.Label)
-	return input1 && input2
+	inputs := circuit.GetInputs(g.Label)
+
+	for _, input := range inputs {
+		if !input {
+			return false
+		}
+	}
+
+	return true
 }
 
+// OrGate.Exec: Returns false if no inputs are true
 func (g *OrGate) Exec(circuit *Circuit) bool {
-	input1, input2 := circuit.GetInputs(g.Label)
-	return input1 || input2
+	inputs := circuit.GetInputs(g.Label)
+
+	for _, input := range inputs {
+		if input {
+			return true
+		}
+	}
+
+	return false
 }
 
+// NotGate.Exec: Negate the input.
 func (g *NotGate) Exec(circuit *Circuit) bool {
-	input := circuit.GetInput(g.Label)
-	return !input
+	inputs := circuit.GetInputs(g.Label)
+
+	if len(inputs) != 1 {
+		panic("NotGate expects exactly one input")
+	}
+
+	return !inputs[0]
 }
 
+// NandGate.Exec: NAND is true if not all inputs are true
 func (g *NandGate) Exec(circuit *Circuit) bool {
-	input1, input2 := circuit.GetInputs(g.Label)
-	return !(input1 && input2)
+	inputs := circuit.GetInputs(g.Label)
+
+	for _, input := range inputs {
+		if !input {
+			return true
+		}
+	}
+
+	return false
 }
 
+// NorGate.Exec:  If all inputs are false, NOR is true
 func (g *NorGate) Exec(circuit *Circuit) bool {
-	input1, input2 := circuit.GetInputs(g.Label)
-	return !(input1 || input2)
+	inputs := circuit.GetInputs(g.Label)
+
+	for _, input := range inputs {
+		if input {
+			return false
+		}
+	}
+
+	return true
 }
 
+// XnorGate.Exec: XNOR is true if the number of true inputs is even
 func (g *XnorGate) Exec(circuit *Circuit) bool {
-	input1, input2 := circuit.GetInputs(g.Label)
-	return input1 == input2
+	inputs := circuit.GetInputs(g.Label)
+	trueCount := 0
+
+	for _, input := range inputs {
+		if input {
+			trueCount++
+		}
+	}
+
+	return trueCount%2 == 0
 }
