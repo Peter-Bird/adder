@@ -2,60 +2,74 @@ package chips
 
 import (
 	"adder/core"
+	"fmt"
 )
 
-const (
-	MuxTemplate = "Input A: A1=%t, A2=%t, A3=%t, A4=%t\nInput B: B1=%t, B2=%t, B3=%t, B4=%t\nSELECT=%t, STROBE=%t\nOutput: Y1=%t, Y2=%t, Y3=%t, Y4=%t\n"
-)
+type Multiplexer struct{}
 
-func NewMultiplexer() *core.Circuit {
+func (mux Multiplexer) Create() *core.Circuit {
 	circuit := core.NewCircuit()
 
+	// Assuming each "NOT", "AND", and "OR" gate needs a unique identifier
 	for i := 1; i <= 4; i++ {
-		circuit.AddGate(core.NewGate("NotGate", "NOT"))
-		circuit.AddGate(core.NewGate("AndGate", Fmt("AND_A%d", i)))
-		circuit.AddGate(core.NewGate("AndGate", Fmt("AND_B%d", i)))
-		circuit.AddGate(core.NewGate("OrGate", Fmt("OR_%d", i)))
+		circuit.AddGates([]core.Gate{
+			core.NewGate("NotGate", fmt.Sprintf("NOT%d", i)),
+			core.NewGate("AndGate", fmt.Sprintf("AND_A%d", i)),
+			core.NewGate("AndGate", fmt.Sprintf("AND_B%d", i)),
+			core.NewGate("OrGate", fmt.Sprintf("OR_%d", i)),
+		})
 	}
 
+	// Correcting connection logic to ensure unique connections per gate
 	for i := 1; i <= 4; i++ {
-		circuit.Connect("NOT", "SELECT")
-		circuit.Connect(Fmt("AND_A%d", i), Fmt("A%d", i), "SELECT")
-		circuit.Connect(Fmt("AND_B%d", i), Fmt("B%d", i), "NOT")
-		circuit.Connect(Fmt("Y%d", i), Fmt("OR_%d", i), "STROBE")
-		circuit.Connect(Fmt("OR_%d", i), Fmt("AND_A%d", i), Fmt("AND_B%d", i))
+		circuit.Connect(fmt.Sprintf("AND_A%d", i), fmt.Sprintf("A%d", i), "SELECT")
+		circuit.Connect(fmt.Sprintf("AND_B%d", i), fmt.Sprintf("B%d", i), fmt.Sprintf("NOT%d", i))
+		circuit.Connect(fmt.Sprintf("NOT%d", i), "SELECT")
+		circuit.Connect(fmt.Sprintf("OR_%d", i), fmt.Sprintf("AND_A%d", i), fmt.Sprintf("AND_B%d", i))
 	}
 
+	// Added logic for STROBE_GATE connections based on the provided logic
 	circuit.AddGate(core.NewGate("AndGate", "STROBE_GATE"))
 	for i := 1; i <= 4; i++ {
-		circuit.Connect("STROBE_GATE", Fmt("Y%d", i), "STROBE")
+		circuit.Connect("STROBE_GATE", fmt.Sprintf("Y%d", i), "STROBE")
 	}
 
 	return circuit
 }
 
-func RunMultiplexer(
-	circuit *core.Circuit,
-	inputs map[string]bool,
-) [4]bool {
+func (mux Multiplexer) Run(circuit *core.Circuit, inputs map[string]bool) interface{} {
+
 	circuit.SetInputs(inputs)
 
-	y1 := circuit.Run("OR_1")
-	y2 := circuit.Run("OR_2")
-	y3 := circuit.Run("OR_3")
-	y4 := circuit.Run("OR_4")
-
-	outputs := [4]bool{y1, y2, y3, y4}
-
-	return outputs
+	return map[string]bool{
+		"Y1": circuit.Run("OR_1"),
+		"Y2": circuit.Run("OR_2"),
+		"Y3": circuit.Run("OR_3"),
+		"Y4": circuit.Run("OR_4"),
+	}
 }
 
-func WriteMultiplexer() {
-	// // Printing the inputs and outputs
-	// fmt.Printf(MuxTemplate,
-	// 	inputs2["A1"], inputs2["A2"], inputs2["A3"], inputs2["A4"],
-	// 	inputs2["B1"], inputs2["B2"], inputs2["B3"], inputs2["B4"],
-	// 	inputs2["SELECT"], inputs2["STROBE"],
-	// 	outputs2[0], outputs2[1], outputs2[2], outputs2[3],
-	// )
+func (mux Multiplexer) Template() string {
+	return `Input A: A1=%t, A2=%t, A3=%t, A4=%t
+Input B: B1=%t, B2=%t, B3=%t, B4=%t
+SELECT=%t, STROBE=%t
+Output: Y1=%t, Y2=%t, Y3=%t, Y4=%t
+`
+}
+
+func (mux Multiplexer) Write(inputs map[string]bool, outputs interface{}) {
+	out, ok := outputs.(map[string]bool)
+	if !ok {
+		fmt.Println("Error: Invalid outputs format")
+		return
+	}
+
+	fmt.Printf(
+		mux.Template(),
+		inputs["A1"], inputs["A2"], inputs["A3"], inputs["A4"],
+		inputs["B1"], inputs["B2"], inputs["B3"], inputs["B4"],
+		inputs["SELECT"],
+		inputs["STROBE"],
+		out["Y1"], out["Y2"], out["Y3"], out["Y4"],
+	)
 }

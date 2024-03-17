@@ -2,13 +2,12 @@ package chips
 
 import (
 	"adder/core"
+	"fmt"
 )
 
-const (
-	Adder = "Inputs: A=%t, B=%t, Cin=%t\nOutputs: Sum: %t, Carry Out: %t\n"
-)
+type FullAdder struct{}
 
-func NewFullAdder() *core.Circuit {
+func (fa FullAdder) Create() *core.Circuit {
 	circuit := core.NewCircuit()
 
 	circuit.AddGates([]core.Gate{
@@ -28,22 +27,40 @@ func NewFullAdder() *core.Circuit {
 	return circuit
 }
 
-func RunFullAdder(
+func (fa FullAdder) Run(
 	circuit *core.Circuit,
 	inputs map[string]bool,
-) (sum bool, carryOut bool) {
+) interface{} {
 
 	circuit.SetInputs(inputs)
 
-	sum = circuit.Run("XOR2")
-	carryOut = circuit.Run("OR")
-
-	return
+	return map[string]bool{
+		"Sum":      circuit.Run("XOR2"),
+		"CarryOut": circuit.Run("OR"),
+	}
 }
 
-func WriteFullAdder() {
-	// fmt.Printf(Adder,
-	// 	inputs["A"], inputs["B"], inputs["Cin"],
-	// 	sum, carryOut,
-	// )
+func (fa FullAdder) Template() string {
+	return "Inputs: A=%t, B=%t, Cin=%t | Sum: %t, Carry Out: %t\n"
+}
+
+func (fa FullAdder) Write(
+	inputs map[string]bool,
+	outputs interface{},
+) {
+
+	out, ok := outputs.(map[string]bool)
+	if !ok {
+		fmt.Println("Error: Invalid outputs format")
+		return
+	}
+
+	fmt.Printf(
+		fa.Template(),
+		inputs["A"],
+		inputs["B"],
+		inputs["Cin"],
+		out["Sum"],
+		out["CarryOut"],
+	)
 }
