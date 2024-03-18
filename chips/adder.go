@@ -28,11 +28,7 @@ func (fa FullAdder) Create() *core.Circuit {
 	}
 
 	// Define connections
-	connections := []struct {
-		Source string
-		Input1 string
-		Input2 string
-	}{
+	connections := [][]string{
 		{"XOR1", "A", "B"},
 		{"XOR2", "XOR1", "Cin"},
 		{"AND1", "A", "B"},
@@ -42,7 +38,9 @@ func (fa FullAdder) Create() *core.Circuit {
 
 	// Connect gates within the circuit
 	for _, conn := range connections {
-		circuit.Connect(conn.Source, conn.Input1, conn.Input2)
+		source := conn[0]
+		inputs := conn[1:]
+		circuit.Connect(source, inputs...)
 	}
 
 	return circuit
@@ -55,10 +53,18 @@ func (fa FullAdder) Run(
 
 	circuit.SetInputs(inputs)
 
-	return map[string]bool{
-		"Sum":      circuit.Run("XOR2"),
-		"CarryOut": circuit.Run("OR"),
+	outMap := map[string]string{
+		"Sum":      "XOR2",
+		"CarryOut": "OR",
 	}
+
+	outputs := make(map[string]bool)
+
+	for outputName, gateName := range outMap {
+		outputs[outputName] = circuit.Run(gateName)
+	}
+
+	return outputs
 }
 
 func (fa FullAdder) Template() string {

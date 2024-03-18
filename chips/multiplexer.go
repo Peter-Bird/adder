@@ -78,12 +78,20 @@ func (mux Multiplexer) Run(circuit *core.Circuit, inputs map[string]bool) interf
 
 	circuit.SetInputs(inputs)
 
-	return map[string]bool{
-		"Y1": circuit.Run("OR_1"),
-		"Y2": circuit.Run("OR_2"),
-		"Y3": circuit.Run("OR_3"),
-		"Y4": circuit.Run("OR_4"),
+	outMap := map[string]string{
+		"Y1": "OR_1",
+		"Y2": "OR_2",
+		"Y3": "OR_3",
+		"Y4": "OR_4",
 	}
+
+	outputs := make(map[string]bool)
+
+	for outputName, gateName := range outMap {
+		outputs[outputName] = circuit.Run(gateName)
+	}
+
+	return outputs
 }
 
 func (mux Multiplexer) Template() string {
