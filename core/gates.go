@@ -13,6 +13,7 @@ var makeGate = map[string]func(string) Gate{
 	"NandGate": func(l string) Gate { return &NandGate{BasicGate: BasicGate{Label: l}} },
 	"NorGate":  func(l string) Gate { return &NorGate{BasicGate: BasicGate{Label: l}} },
 	"XnorGate": func(l string) Gate { return &XnorGate{BasicGate: BasicGate{Label: l}} },
+	"EquGate":  func(l string) Gate { return &XnorGate{BasicGate: BasicGate{Label: l}} },
 }
 
 func NewGate(gateType, label string) Gate {
@@ -37,6 +38,7 @@ type NotGate struct{ BasicGate }
 type NandGate struct{ BasicGate }
 type NorGate struct{ BasicGate }
 type XnorGate struct{ BasicGate }
+type EquGate struct{ BasicGate }
 
 // XorGate.Exec: XOR is true if and only
 // if there's an odd number of true inputs.
@@ -128,4 +130,15 @@ func (g *XnorGate) Exec(circuit *Circuit) bool {
 	}
 
 	return trueCount%2 == 0
+}
+
+// EquGate.Exec: output the input.
+func (g *EquGate) Exec(circuit *Circuit) bool {
+	inputs := circuit.GetInputs(g.Label)
+
+	if len(inputs) != 1 {
+		panic("EquGate expects exactly one input")
+	}
+
+	return inputs[0]
 }

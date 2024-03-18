@@ -14,6 +14,25 @@ type Chip interface {
 	Write(map[string]bool, interface{})
 }
 
-func Fmt(format string, a ...any) string {
-	return fmt.Sprintf(format, a...)
+type Gates []struct {
+	Type string
+	Name string
+}
+
+type Connections [][]string
+
+type Ports []string
+
+func Write(inputs map[string]bool, outputs map[string]bool) {
+	// Print inputs
+	fmt.Println("In:")
+	for key, value := range inputs {
+		fmt.Printf("\t%s: %t\n", key, value)
+	}
+
+	// Print outputs
+	fmt.Println("Out:")
+	for key, value := range outputs {
+		fmt.Printf("\t%s: %t\n", key, value)
+	}
 }

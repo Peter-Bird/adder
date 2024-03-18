@@ -10,11 +10,11 @@ func main() {
 }
 
 func fa() {
-	fa := chips.FullAdder{}
+	fa := chips.NewFA()
 	chip := fa.Create()
 
 	inputs := map[string]bool{
-		"A": true, "B": true, "Cin": true,
+		"A": true, "B": true, "Cin": false,
 	}
 
 	outputs := fa.Run(chip, inputs).(map[string]bool)
@@ -23,7 +23,7 @@ func fa() {
 }
 
 func mux() {
-	mux := chips.Multiplexer{}
+	mux := chips.NewMux()
 	chip := mux.Create()
 
 	inputs := map[string]bool{
