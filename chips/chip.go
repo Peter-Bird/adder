@@ -6,14 +6,6 @@ import (
 	"fmt"
 )
 
-// Chip defines a standard interface for chip operations.
-type Chip interface {
-	Create() *core.Circuit
-	Run(*core.Circuit, map[string]bool) interface{}
-	Template() string
-	Write(map[string]bool, interface{})
-}
-
 type Gates []struct {
 	Type string
 	Name string
@@ -21,9 +13,41 @@ type Gates []struct {
 
 type Connections [][]string
 
-type Ports []string
+type PortList []string
 
-func Write(inputs map[string]bool, outputs map[string]bool) {
+type Chip struct {
+	GateType    string
+	Gates       Gates
+	Connections Connections
+	InPorts     PortList
+	OutPorts    PortList
+}
+
+type Ports map[string]bool
+
+func (bc *Chip) Create() *core.Circuit {
+	circuit := core.NewCircuit()
+	for _, gate := range bc.Gates {
+		circuit.AddGate(core.NewGate(gate.Type, gate.Name))
+	}
+	for _, conn := range bc.Connections {
+		source := conn[0]
+		inputs := conn[1:]
+		circuit.Connect(source, inputs...)
+	}
+	return circuit
+}
+
+func (bc *Chip) Run(circuit *core.Circuit, inputs Ports) Ports {
+	circuit.SetInputs(inputs)
+	outputs := make(Ports)
+	for _, output := range bc.OutPorts {
+		outputs[output] = circuit.Run(output)
+	}
+	return outputs
+}
+
+func (bc *Chip) Write(inputs, outputs Ports) {
 	// Print inputs
 	fmt.Println("In:")
 	for key, value := range inputs {
