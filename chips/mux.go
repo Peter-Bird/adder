@@ -1,14 +1,16 @@
 package chips
 
+import "adder/core"
+
 type Multiplexer struct {
-	Chip
+	core.Chip
 }
 
 func NewMux() *Multiplexer {
 	return &Multiplexer{
-		Chip: Chip{
+		Chip: core.Chip{
 			GateType: "Multiplexer",
-			Gates: Gates{
+			Gates: core.Gates{
 				{"NotGate", "NOT1"},
 				{"NotGate", "NOT2"},
 				{"NotGate", "NOT3"},
@@ -31,7 +33,7 @@ func NewMux() *Multiplexer {
 				{"EquGate", "Y3"},
 				{"EquGate", "Y4"},
 			},
-			Connections: Connections{
+			Connections: core.Connections{
 				{"AND_A1", "A1", "SELECT"},
 				{"AND_B1", "B1", "NOT1"},
 				{"NOT1", "SELECT"},
@@ -58,7 +60,7 @@ func NewMux() *Multiplexer {
 				{"Y3", "OR_3"},
 				{"Y4", "OR_4"},
 			},
-			InPorts: PortList{
+			InPorts: core.PortList{
 				"A1",
 				"A2",
 				"A3",
@@ -70,7 +72,7 @@ func NewMux() *Multiplexer {
 				"SELECT",
 				"STROBE",
 			},
-			OutPorts: PortList{
+			OutPorts: core.PortList{
 				"Y1",
 				"Y2",
 				"Y3",

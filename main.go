@@ -2,6 +2,7 @@ package main
 
 import (
 	"adder/chips"
+	"adder/core"
 )
 
 func main() {
@@ -13,7 +14,7 @@ func fa() {
 	fa := chips.NewFA()
 	chip := fa.Create()
 
-	inputs := chips.Ports{
+	inputs := core.Ports{
 		"A": true, "B": true, "Cin": false,
 	}
 
@@ -26,7 +27,7 @@ func mux() {
 	mux := chips.NewMux()
 	chip := mux.Create()
 
-	inputs := chips.Ports{
+	inputs := core.Ports{
 		"A1": false, "A2": true, "A3": false, "A4": true,
 		"B1": true, "B2": false, "B3": true, "B4": false,
 		"SELECT": true,

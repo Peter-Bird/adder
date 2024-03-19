@@ -1,14 +1,16 @@
 package chips
 
+import "adder/core"
+
 type FullAdder struct {
-	Chip
+	core.Chip
 }
 
 func NewFA() *FullAdder {
 	return &FullAdder{
-		Chip: Chip{
+		Chip: core.Chip{
 			GateType: "FullAdder",
-			Gates: Gates{
+			Gates: core.Gates{
 				{"XorGate", "XOR1"},
 				{"XorGate", "XOR2"},
 				{"AndGate", "AND1"},
@@ -17,7 +19,7 @@ func NewFA() *FullAdder {
 				{"EquGate", "Sum"},
 				{"EquGate", "Cout"},
 			},
-			Connections: Connections{
+			Connections: core.Connections{
 				{"XOR1", "A", "B"},
 				{"XOR2", "XOR1", "Cin"},
 				{"AND1", "A", "B"},
@@ -26,12 +28,12 @@ func NewFA() *FullAdder {
 				{"Sum", "XOR2"},
 				{"Cout", "OR"},
 			},
-			InPorts: PortList{
+			InPorts: core.PortList{
 				"A",
 				"B",
 				"Cin",
 			},
-			OutPorts: PortList{
+			OutPorts: core.PortList{
 				"Sum",
 				"Cout",
 			},

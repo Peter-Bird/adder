@@ -1,8 +1,6 @@
-package chips
+package core
 
 import (
-	"adder/core"
-
 	"fmt"
 )
 
@@ -25,12 +23,12 @@ type Chip struct {
 
 type Ports map[string]bool
 
-func (bc *Chip) Create() *core.Circuit {
-	circuit := core.NewCircuit()
-	for _, gate := range bc.Gates {
-		circuit.AddGate(core.NewGate(gate.Type, gate.Name))
+func (c *Chip) Create() *Circuit {
+	circuit := NewCircuit()
+	for _, gate := range c.Gates {
+		circuit.AddGate(NewGate(gate.Type, gate.Name))
 	}
-	for _, conn := range bc.Connections {
+	for _, conn := range c.Connections {
 		source := conn[0]
 		inputs := conn[1:]
 		circuit.Connect(source, inputs...)
@@ -38,16 +36,16 @@ func (bc *Chip) Create() *core.Circuit {
 	return circuit
 }
 
-func (bc *Chip) Run(circuit *core.Circuit, inputs Ports) Ports {
+func (c *Chip) Run(circuit *Circuit, inputs Ports) Ports {
 	circuit.SetInputs(inputs)
 	outputs := make(Ports)
-	for _, output := range bc.OutPorts {
+	for _, output := range c.OutPorts {
 		outputs[output] = circuit.Run(output)
 	}
 	return outputs
 }
 
-func (bc *Chip) Write(inputs, outputs Ports) {
+func (c *Chip) Write(inputs, outputs Ports) {
 	// Print inputs
 	fmt.Println("In:")
 	for key, value := range inputs {
@@ -57,6 +55,14 @@ func (bc *Chip) Write(inputs, outputs Ports) {
 	// Print outputs
 	fmt.Println("Out:")
 	for key, value := range outputs {
+		fmt.Printf("\t%s: %t\n", key, value)
+	}
+}
+
+func printPorts(name string, ports Ports) {
+
+	fmt.Println(name)
+	for key, value := range ports {
 		fmt.Printf("\t%s: %t\n", key, value)
 	}
 }
